@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Binding workspace prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#172033;--ink2:#3B4558;--muted:#4A5569;--line:#D5DBE5;--line2:#E3E7EE;--bg:#F4F5F7;--teal:#0B5C5C;--tealdk:#0A3F3F;--tealbg:#E3F1F0;--tealbd:#8FC5C1;--okbg:#E3F2E8;--ok:#1B5733;--warnbg:#FFF3DC;--warnbd:#E0B25A;--warn:#5A3A00;--errbg:#FDECEA;--err:#8A1C13}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
+button,textarea,input{font-family:inherit}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.top{background:#172033;color:#fff;padding:0 32px;min-height:56px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px}
+.brand{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600}
+.topr{display:flex;flex-wrap:wrap;gap:4px 20px;font-size:14px;color:#D3D9E6;align-items:center}
+.topr .linkbtn{color:#D3D9E6}
+.wrap{max-width:1360px;margin:0 auto;padding:28px 32px 56px;display:flex;flex-direction:column;gap:20px}
+h1{margin:0;font-size:28px;font-weight:600}
+h2{margin:0;font-size:18px;font-weight:600}
+.crumb{font-size:13px;color:var(--muted)}
+.sub{font-size:14px;color:var(--ink2)}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.btn{min-height:44px;padding:0 18px;border-radius:6px;border:0;background:var(--teal);color:#fff;font-size:14.5px;font-weight:600;cursor:pointer}
+.btn.sec{background:#fff;color:var(--teal);border:1px solid var(--teal)}
+.btn:disabled,.btn.off{background:#D5DBE5;color:#3B4558;cursor:not-allowed;border:0}
+.linkbtn{background:none;border:0;padding:0;min-height:44px;color:var(--teal);font-size:14px;font-weight:600;cursor:pointer;text-decoration:underline}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.pill{display:inline-block;font-size:12.5px;font-weight:600;border-radius:4px;padding:3px 8px;white-space:nowrap}
+.pill.ok{background:var(--okbg);color:var(--ok)}.pill.rev{background:var(--tealbg);color:var(--tealdk)}.pill.bad{background:var(--errbg);color:var(--err)}.pill.gray{background:#E8ECF3;color:var(--ink)}
+.cp{background:var(--tealbg);border:1px solid var(--tealbd);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;color:var(--tealdk)}
+.cp .lab{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.cp .txt{font-size:13.5px;line-height:1.5}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.banner{border:1px solid var(--warnbd);background:var(--warnbg);color:var(--warn);border-radius:10px;padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.banner.bad{background:var(--errbg);border-color:#D98A83;color:#6E150E}
+.banner ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.45}
+.doc{border-top:1px solid var(--line2);padding:14px 0;display:flex;flex-direction:column;gap:8px}
+.doc .h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.src{font-size:12.5px;color:var(--muted)}
+.line{border-top:1px solid var(--line2);padding:14px 0;display:flex;gap:14px;align-items:flex-start}
+.tick{flex:none;width:44px;height:44px;margin:-8px -8px -8px -8px;background:transparent;border:0;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.box{width:24px;height:24px;border-radius:5px;border:2px solid #566176;background:#fff;display:flex;align-items:center;justify-content:center}
+.box.on{background:var(--teal);border-color:var(--teal)}
+.lock{flex:none;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.chip{background:#F1F3F7;border-radius:6px;padding:6px 10px;font-size:13px}
+.fieldrow{display:grid;grid-template-columns:120px minmax(0,1fr);gap:6px 16px;font-size:14px;line-height:1.5}
+.fieldrow span:first-child{color:var(--muted)}
+.dochl{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;background:var(--errbg);border:2px solid #B42318;border-radius:4px;padding:8px 10px}
+.docbody{border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;font-size:14px;background:#FBFBFC}
+.docbody .r{display:flex;justify-content:space-between;gap:12px}
+.docbody .r span:first-child{color:var(--muted)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.opt{display:flex;flex-direction:column;gap:6px;text-align:left;min-height:44px;padding:16px;border-radius:8px;cursor:pointer;color:var(--ink);border:1px solid #8793A8;background:#fff;font-size:13.5px;line-height:1.5}
+.opt b{font-size:15px;font-weight:600}
+.opt.sel{border:2px solid var(--teal);background:var(--tealbg)}
+textarea,input[type=text]{font-size:14px;line-height:1.5;padding:10px 12px;border:1px solid #8793A8;border-radius:6px;background:#fff}
+.preview{border:1px solid var(--line);border-radius:8px;padding:18px;background:#FBFBFC;display:flex;flex-direction:column;gap:14px}
+.mat{display:flex;align-items:flex-start;gap:12px;text-align:left;background:var(--warnbg);border:1px solid var(--warnbd);border-radius:8px;padding:14px 16px;cursor:pointer;color:#4A3200;font-size:13.5px;line-height:1.5;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.stage .n{width:32px;height:32px;border-radius:16px;background:#172033;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#566176;margin-bottom:4px}
+.ev{background:#F1F3F7;border-radius:6px;padding:10px 12px;font-size:12.5px;line-height:1.5}
+.seg{display:inline-flex;border:1px solid #8793A8;border-radius:6px;overflow:hidden}
+.seg button{min-height:44px;padding:0 16px;border:0;background:#fff;font-size:14px;cursor:pointer;color:var(--ink)}
+.seg button.sel{background:var(--teal);color:#fff;font-weight:600}
+.wish{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 24px;padding:14px 0;border-top:1px solid var(--line2);align-items:start;font-size:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+'use strict';
+var S = {
+  screen:'journey', fax:false,
+  ticks:{c1:true,c2:true,c5:false,c6:false,c7:false},
+  choice:null, material:true, sent:false,
+  confirmed:false, bound:false, blocked:true,
+  minor:'', note:'', misread:''
+};
+var CHECK='<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M5.2 8.2l1.9 1.9 3.7-4"/></svg>';
+var TICKW='<svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 7.4l2.7 2.7 5.2-5.6"/></svg>';
+var LOCK='<svg role="img" aria-label="Locked" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#566176" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="9" width="11" height="8" rx="1.8"/><path d="M7 9V6.6a3 3 0 016 0V9"/></svg>';
+var LOGO='<svg aria-hidden="true" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="15" height="15" rx="2.5"/><path d="M7.5 11.2l2.4 2.4 4.6-5"/></svg>';
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function go(to,label){return '<button class="linkbtn" data-a="go" data-to="'+to+'">'+label+'</button>';}
+function cp(label,body,buttons){return '<div class="cp"><div class="lab">'+CHECK+label+'</div><div class="txt">'+body+'</div>'+(buttons?'<div class="btns">'+buttons+'</div>':'')+'</div>';}
+function top(role,backTo,backLabel){
+  return '<div class="top"><div class="brand">'+LOGO+'Binding workspace</div><div class="topr">'+
+    (backTo?go(backTo,backLabel):'')+'<span>Springfield office</span><span>'+role+'</span></div></div>';
+}
+
+var STAGES=[
+ ['1','Submission arrives','Documents reach the assistant through the client portal, broker email and sometimes fax.','Colin log: 17 of 54 submissions had a document arrive outside the portal.','Every channel files into one submission folder, and each document shows where it came from.','The assistant confirms the filing when the system cannot match a document to a submission with high certainty.','a misfiled loss run would be checked against the wrong client.'],
+ ['2','Find the documents','Searches the inbox for loss runs and other required items. Locating everything averages 11 minutes.','Colin log: 11 min to locate documents, 3 min for the checklist.','A required documents list shows each item as filed, missing or needing review, one click from the document itself.','The assistant accepts each document as the right one.','a document being present is not the same as it being correct, and only the assistant can judge that.'],
+ ['3','Complete the checklist','Goes line by line down a checklist both assistants know by heart.','Anika: "the checklist itself is fine." Colin log: 3 min average.','Same checklist, same order, same wording. Each line links to its source document. No autofill in v1.','The assistant ticks every line. Nothing is ticked on their behalf.','the tick is the assistant\'s professional confirmation, so it stays a human act.'],
+ ['4','Catch mismatches','Reads documents carefully to spot differences, such as a coverage limit that differs between certificate and application.','Anika log: 23 of 61 (38%). Colin log: 19 of 54 (35%).','Values from each document sit side by side on the checklist line, with differences marked by icon and text, not color alone.','The assistant decides whether each difference is real, minor or a misread.','the system can misread a number, especially on a fax scan. It suggests and the assistant judges.'],
+ ['5','Resolve with the broker','Emails the broker, then waits and chases. Median 2.1 days to a reply, nine submissions over 4 days.','Anika log: median 2.1 days flag to reply. Interview: "that can take days."','One structured request shows both values and what is needed. The broker replies through a link that attaches the corrected document. Reminders go out on their own.','The assistant approves the request before it sends. An underwriter approves any mismatch marked material.','the message goes to a client on the firm\'s behalf, and who decides materiality is still an open question.'],
+ ['6','Bind','The policy becomes active once every requirement is confirmed and no limit mismatch remains.','Brief: binding cannot happen with a missing document or a limit that differs from the request.','A bind review gathers checklist, documents and resolved mismatches in one view.','An underwriter gives final approval. The button stays locked until every required line is complete.','binding creates a coverage obligation that is hard to undo.']
+];
+var WISH=[
+ ['Smart autofill for the checklist','Defer','The checklist averages 3 minutes and both assistants call it fast. Autofill would speed up the step that is not slow. Source links on each line give most of the benefit.'],
+ ['Cleaner interface than Bindwise','Yes, reshaped','Neither assistant raised the look. Rebuilding the layout around documents and mismatches modernises it as a result.'],
+ ['AI chat assistant','Not in v1','No interview or log supports it. The assistance we add is narrow, document filing and mismatch detection, each with a visible reason.'],
+ ['Mobile access','Not in v1','No evidence in interviews or logs. Revisit after the next round of interviews.']
+];
+
+function journey(){
+  var cards=STAGES.map(function(s){return '<div class="card stage"><div style="display:flex;align-items:center;gap:12px"><div class="n mono">'+s[0]+'</div><div style="font-size:18px;font-weight:600">'+s[1]+'</div></div>'+
+   '<div><div class="lbl">Today</div><div style="font-size:14px;line-height:1.5">'+s[2]+'</div></div>'+
+   '<div class="ev"><div class="lbl">Evidence</div><span class="mono">'+s[3]+'</span></div>'+
+   '<div><div class="lbl">Design response</div><div style="font-size:14px;line-height:1.5">'+s[4]+'</div></div>'+
+   cp('Human checkpoint',s[5]+'<br><span style="font-size:13px">Why: '+s[6]+'</span>')+'</div>';}).join('');
+  var wish=WISH.map(function(w){return '<div class="wish"><div style="font-weight:600;font-size:15px">'+w[0]+'</div><div><span class="pill gray">'+w[1]+'</span></div><div style="grid-column:span 2">'+w[2]+'</div></div>';}).join('');
+  return '<div class="wrap" style="padding-top:48px"><div style="max-width:880px;display:flex;flex-direction:column;gap:10px">'+
+   '<div class="mono" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)">Marsh &amp; Colby, discovery week 3</div>'+
+   '<h1 style="font-size:36px;line-height:1.15">Binding journey: where the time goes and where a person has to decide</h1>'+
+   '<p style="margin:0;font-size:16px;line-height:1.55;color:var(--ink2)">The checklist takes about 3 minutes. The days are lost before it, finding documents, and after it, waiting on brokers about mismatches. Every stage also names the point where a human must check or approve, and why.</p></div>'+
+   '<div class="grid">'+cards+'</div>'+
+   '<div class="card" style="gap:6px"><h2 style="font-size:22px">How this answers Owen\'s feature list</h2><div class="sub">Owen was right that the checklist needs little change. The lost time sits on either side of it.</div><div style="margin-top:10px">'+wish+'</div></div>'+
+   '<div class="btns"><button class="btn" data-a="go" data-to="s1">Open the prototype: Screen 1</button></div></div>';
+}
+
+function s1(){
+  var tk=S.ticks, f=S.fax;
+  var done=(tk.c1?1:0)+(tk.c2?1:0)+(f?1:0)+(tk.c5?1:0)+(tk.c6?1:0)+(tk.c7?1:0);
+  var rem=3-((tk.c5?1:0)+(tk.c6?1:0)+(tk.c7?1:0));
+  var bl=[]; if(!f)bl.push('One document needs your review: the fax scan of the coverage limits page.');
+  bl.push('One document is missing: prior policy declarations.');
+  bl.push('One coverage limit differs between the certificate and the application.');
+  if(rem>0)bl.push(rem+' other checklist line'+(rem>1?'s':'')+' still to confirm.');
+  function doc(name,ch,when,pill,cls,extra){return '<div class="doc"><div class="h"><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><div style="font-size:15px;font-weight:600">'+name+'</div><div class="src"><span class="mono">'+ch+'</span> '+when+'</div></div><span class="pill '+cls+'">'+pill+'</span></div>'+(extra||'')+'</div>';}
+  var faxExtra=f?'':cp('Your decision','A fax scan came in with no submission number. It reads as Harlow Fabrication, with low certainty because the scan is faint. Is this the right submission and the right document?',
+    '<button class="btn" data-a="fax" data-fk="fax">Yes, file it here</button><button class="btn sec">Not this submission</button>');
+  var docs=doc('Certificate of insurance','Client portal','received 9:12 am','Filed','ok')+doc('Application','Client portal','received 9:12 am','Filed','ok')+
+    doc('Loss runs, five years','Broker email','filed automatically from an attachment, 9:40 am','Filed','ok')+
+    doc('Coverage limits page','Fax scan',f?'confirmed by you':'received 10:05 am',f?'Filed':'Needs your review',f?'ok':'rev',faxExtra)+
+    doc('Prior policy declarations','Not received','due before bind','Missing','bad','<div style="font-size:13.5px;line-height:1.5;color:var(--ink2)">Not received. A request with the exact item, due date and a reply link is ready to send.</div><div><button class="btn sec">Review request to broker</button></div>');
+  function tickLine(id,text,src){var on=tk[id];return '<div class="line"><button class="tick" aria-pressed="'+on+'" aria-label="Mark complete: '+esc(text)+'" data-a="tick" data-id="'+id+'" data-fk="t'+id+'"><span class="box'+(on?' on':'')+'">'+(on?TICKW:'')+'</span></button><div style="flex:1;min-width:0;font-size:15px;font-weight:500;line-height:1.4">'+text+'</div>'+(src?'<div class="mono src" style="max-width:150px;text-align:right">'+src+'</div>':'')+'</div>';}
+  var l3=f?'<div class="line"><div class="tick" style="cursor:default"><span class="box on">'+TICKW+'</span></div><div style="flex:1;font-size:15px;font-weight:500">Coverage limits page on file</div><div class="mono src">Coverage limits page</div></div>'
+    :'<div class="line"><div class="lock">'+LOCK+'</div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="font-size:15px;font-weight:500">Coverage limits page on file</div><div style="font-size:13px;color:var(--muted)">Locked until you confirm the fax scan in the documents list.</div></div></div>';
+  var l4='<div class="line"><div class="lock">'+LOCK+'</div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px"><div style="font-size:15px;font-weight:500">Per occurrence limit matches the request</div>'+
+    '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px"><div class="chip"><span style="color:var(--muted)">Certificate</span> <span class="mono">$1,000,000</span></div><div class="chip"><span style="color:var(--muted)">Application</span> <span class="mono">$2,000,000</span></div><span class="pill bad">Values differ</span></div>'+
+    cp('Your decision','The difference is flagged automatically. Only you can say whether it is a real problem, a minor one or a misread, so this line cannot be ticked until you do.','<button class="btn" data-a="go" data-to="s2">Review this mismatch</button>')+'</div></div>';
+  var l5='<div class="line"><button class="tick" aria-pressed="'+tk.c5+'" aria-label="Mark complete: Aggregate limit matches the request" data-a="tick" data-id="c5" data-fk="tc5"><span class="box'+(tk.c5?' on':'')+'">'+(tk.c5?TICKW:'')+'</span></button><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px"><div style="font-size:15px;font-weight:500">Aggregate limit matches the request</div><div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px"><div class="chip"><span style="color:var(--muted)">Certificate</span> <span class="mono">$2,000,000</span></div><div class="chip"><span style="color:var(--muted)">Application</span> <span class="mono">$2,000,000</span></div><span class="pill ok">Values agree</span></div></div></div>';
+  return top('Signed in as an underwriting assistant','journey','Journey')+'<div class="wrap">'+
+   '<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px"><div style="display:flex;flex-direction:column;gap:6px"><div class="crumb">Submissions / Harlow Fabrication LLC</div><h1>Harlow Fabrication LLC</h1><div class="sub">General liability renewal. Sample data for this prototype.</div></div><div class="sub" style="display:flex;align-items:center;gap:10px"><span style="width:12px;height:12px;border-radius:6px;background:#0F7B78;display:inline-block"></span>Teal markers show where a person decides</div></div>'+
+   '<div class="banner"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px"><div style="font-size:17px;font-weight:600">Not ready to bind</div><div class="mono" style="font-size:13px">'+done+' of 7 checklist lines complete</div></div><ul>'+bl.map(function(b){return '<li>'+b+'</li>';}).join('')+'</ul></div>'+
+   '<div class="row"><section class="card" style="flex:1 1 340px;max-width:420px;gap:4px"><h2 style="margin-bottom:8px">Required documents</h2><div style="font-size:13px;line-height:1.5;color:var(--muted);margin-bottom:8px">Everything for this submission lands here, whichever channel it came through.</div>'+docs+'</section>'+
+   '<section class="card" style="flex:999 1 520px;gap:4px"><div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px"><h2 style="margin-bottom:8px">Coverage checklist</h2><div style="font-size:13px;color:var(--muted)">Same lines, same order as Bindwise</div></div>'+
+   tickLine('c1','Certificate of insurance on file and current','Certificate p.1')+tickLine('c2','Loss runs on file for five years','Loss runs p.1')+l3+l4+l5+tickLine('c6','Named insured is the same on all documents','')+tickLine('c7','Policy period is the same on all documents','')+
+   '<div style="border-top:1px solid var(--line2);padding-top:16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px"><div style="font-size:13.5px;line-height:1.5;color:var(--ink2);max-width:520px">Bind review opens when every line is complete. The final bind is approved by an underwriter, not by the assistant.</div>'+go('s3b','Preview the bind review')+'</div></section></div></div>';
+}
+
+function s2(){
+  var c=S.choice;
+  var opts=[['real','A real mismatch','The documents genuinely disagree. A corrected document is needed from the broker.'],['minor','Minor, no action needed','The difference does not affect coverage, for example a formatting or rounding variation.'],['misread','The system misread it','The value on the document is not what was read. You enter the correct one.']].map(function(o){
+    return '<button class="opt'+(c===o[0]?' sel':'')+'" aria-pressed="'+(c===o[0])+'" data-a="choice" data-v="'+o[0]+'" data-fk="o'+o[0]+'"><b>'+o[1]+'</b><span style="color:var(--ink2)">'+o[2]+'</span></button>';}).join('');
+  var more='';
+  if(c==='minor'){more='<section class="card" style="max-width:760px"><h2>Record why it is minor</h2><div class="sub">A short reason is required. Clearing a line without one would leave the underwriter guessing at bind review.</div><label for="minor" style="font-size:14px;font-weight:600">Reason</label><textarea id="minor" rows="3" data-k="minor" data-fk="minor">'+esc(S.minor)+'</textarea><div><button class="btn" data-a="go" data-to="s1">Clear the difference and return</button></div></section>';}
+  if(c==='misread'){more='<section class="card" style="max-width:760px"><h2>Correct what the system read</h2><div class="sub">Open the document beside this screen, enter the value you can see, and the comparison runs again.</div><label for="mr" style="font-size:14px;font-weight:600">Value on the certificate</label><input id="mr" type="text" style="max-width:280px;min-height:44px" data-k="misread" data-fk="mr" value="'+esc(S.misread)+'"><div><button class="btn" data-a="go" data-to="s1">Save and compare again</button></div></section>';}
+  if(c==='real'){
+    var m=S.material;
+    if(!S.sent){
+      more='<section class="card" style="gap:18px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tealdk)">'+CHECK+'Your decision 2 of 2</div><h2 style="font-size:19px">Review the request to the broker before it goes out</h2><div class="sub" style="line-height:1.5">The request is built from the two values above, so the broker sees exactly what differs and what is needed. Nothing is sent until you approve it.</div></div>'+
+       '<div class="preview"><div class="fieldrow"><span>To</span><span>Broker of record, Delta Brokers (sample)</span></div><div class="fieldrow"><span>Subject</span><span>Harlow Fabrication LLC: each occurrence limit differs between your documents</span></div><div class="fieldrow"><span>What we found</span><span>The certificate of insurance shows $1,000,000 each occurrence. The application, section 4, requests $2,000,000.</span></div><div class="fieldrow"><span>What we need</span><span>A corrected certificate that matches the limit requested, or written confirmation of the limit the client wants.</span></div><div class="fieldrow"><span>How to reply</span><span>Use the reply link in the message to attach a file or confirm the limit. No email thread needed.</span></div><div class="fieldrow"><span>Reminders</span><span>Automatic after 1 business day and again after 2, until the broker replies.</span></div>'+
+       '<label for="note" style="font-weight:600;font-size:14px">Add a note for the broker (optional)</label><textarea id="note" rows="2" data-k="note" data-fk="note">'+esc(S.note)+'</textarea></div>'+
+       '<button class="mat" aria-pressed="'+m+'" data-a="mat" data-fk="mat"><span class="box'+(m?' on':'')+'" style="flex:none;margin-top:2px;'+(m?'background:#7A4B00;border-color:#7A4B00':'')+'">'+(m?TICKW:'')+'</span><span style="display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:600">Mark as material</span><span>Suggested because the limit differs by half. A material mismatch goes to an underwriter before the broker hears about it. The rule for what counts as material is an assumption in this prototype and is one of the open interview questions.</span></span></button>'+
+       '<div class="btns" style="align-items:center"><button class="btn" data-a="send" data-fk="send">'+(m?'Approve and send to underwriter':'Approve and send to broker')+'</button>'+go('s1','Cancel and return')+'</div></section>';
+    } else {
+      more='<section class="card" style="gap:16px"><div style="display:flex;align-items:center;gap:10px;color:var(--ok)"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M7.8 12.3l3 3 5.6-6"/></svg><h2 style="font-size:19px;color:var(--ink)">'+(m?'Waiting for underwriter approval':'Request sent to the broker')+'</h2></div>'+
+       '<div style="font-size:14px;line-height:1.6;max-width:720px">'+(m?'You approved the request. Because it is marked material, an underwriter reviews it first. The broker is not contacted until that approval is given.':'You approved the request and it has gone to the broker with the reply link.')+'</div>'+
+       '<div style="display:flex;flex-direction:column;gap:8px;font-size:14px;max-width:720px"><div style="display:grid;grid-template-columns:24px 1fr;gap:8px"><span class="mono">1</span><span>Your decision and the request are logged on this submission.</span></div><div style="display:grid;grid-template-columns:24px 1fr;gap:8px"><span class="mono">2</span><span>'+(m?'An underwriter approves or edits the request. Then it goes to the broker with the reply link and reminders.':'The broker replies through the link. Reminders go out after 1 and 2 business days if there is no reply.')+'</span></div><div style="display:grid;grid-template-columns:24px 1fr;gap:8px"><span class="mono">3</span><span>When the corrected document arrives, it files here and you accept it. Line 4 stays locked until then.</span></div></div>'+
+       '<div class="btns" style="align-items:center"><button class="btn" data-a="go" data-to="s1">Return to the submission</button>'+go('s3r','Preview the bind review')+'</div></section>';
+    }
+  }
+  function dp(title,src,rows,hl){return '<section class="card" style="flex:1 1 380px"><div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px"><h2 style="font-size:17px">'+title+'</h2><div class="src">'+src+'</div></div><div class="docbody">'+rows+'</div></section>';}
+  return top('Signed in as an underwriting assistant','s1','Back to Harlow Fabrication LLC')+'<div class="wrap">'+
+   '<div style="display:flex;flex-direction:column;gap:6px"><div class="crumb">Harlow Fabrication LLC / Checklist line 4</div><h1>Per occurrence limit differs between two documents</h1><div class="sub">The system found the difference. You decide what it means. Sample data for this prototype.</div></div>'+
+   '<div class="row">'+dp('Certificate of insurance','<span class="mono">Client portal</span> page 1, clear scan','<div class="r"><span>Named insured</span><span>Harlow Fabrication LLC</span></div><div class="r"><span>Policy period</span><span>Jan 1 to Jan 1, next year</span></div><div class="dochl"><b>Each occurrence</b><span style="display:flex;gap:10px;align-items:center"><span class="mono" style="font-size:15px">$1,000,000</span><span style="font-size:12px;font-weight:600;color:var(--err)">Differs</span></span></div><div class="r"><span>General aggregate</span><span class="mono">$2,000,000</span></div>')+
+   dp('Application','<span class="mono">Client portal</span> page 3, typed form','<div class="r"><span>Applicant</span><span>Harlow Fabrication LLC</span></div><div class="r"><span>Requested period</span><span>Jan 1 to Jan 1, next year</span></div><div class="dochl"><b>Section 4, each occurrence requested</b><span style="display:flex;gap:10px;align-items:center"><span class="mono" style="font-size:15px">$2,000,000</span><span style="font-size:12px;font-weight:600;color:var(--err)">Differs</span></span></div><div class="r"><span>Section 4, general aggregate requested</span><span class="mono">$2,000,000</span></div>')+'</div>'+
+   '<section class="card" style="gap:16px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tealdk)">'+CHECK+'Your decision 1 of 2</div><h2 style="font-size:19px">What is this difference?</h2><div class="sub" style="line-height:1.5">The system never clears a mismatch on its own, because it can misread a number and cannot know what the client meant. Your choice is logged and shown to the underwriter at bind review.</div></div><div class="opts">'+opts+'</div></section>'+more+'</div>';
+}
+
+function s3(){
+  var b=S.blocked;
+  function sec(t,h,rows){return '<section class="card"><div style="display:flex;flex-direction:column;gap:8px"><h2 style="font-size:17px">'+t+'</h2><div><span class="pill '+(b?'bad':'ok')+'">'+h+'</span></div></div><div>'+rows.map(function(r){return '<div style="border-top:1px solid var(--line2);padding:10px 0;font-size:14px;line-height:1.5">'+r+'</div>';}).join('')+'</div></section>';}
+  var cards=sec('Checklist',b?'6 of 7 lines complete':'7 of 7 lines complete',['Lines 1 to 3: required documents on file, each accepted by the assistant.',b?'Line 4: per occurrence limit is still open.':'Line 4: per occurrence limit, resolved after a corrected certificate. See mismatches.','Lines 5 to 7: aggregate limit, named insured and policy period agree across documents.'])+
+   sec('Documents',b?'4 of 5 filed':'5 of 5 filed',['Certificate of insurance: '+(b?'original, limit differs. Corrected version not yet received.':'corrected version, received through the broker reply link.'),'Application: client portal.','Loss runs, five years: broker email, filed automatically.','Coverage limits page: fax scan, confirmed by the assistant.',b?'Prior policy declarations: missing.':'Prior policy declarations: received through the broker reply link.'])+
+   sec('Mismatches',b?'1 open, 0 cleared as minor':'1 resolved, 0 cleared as minor',['Each occurrence limit: certificate $1,000,000, application $2,000,000.',b?'Marked material. Request approved by an underwriter and sent. Waiting on the broker.':'Marked material. Request approved by an underwriter. Corrected certificate now shows $2,000,000 and matches the application.','Nothing was cleared as minor without a recorded reason.']);
+  var can=!b&&S.confirmed, ap;
+  if(S.bound){ap='<div style="display:flex;align-items:center;gap:10px;color:var(--ok)"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M7.8 12.3l3 3 5.6-6"/></svg><h2 style="font-size:19px;color:var(--ink)">Policy bound</h2></div><div style="font-size:14px;line-height:1.6;max-width:720px">Your approval, the assistant\'s confirmations and the resolved mismatch are saved together as the record for this submission.</div><div class="btns"><button class="btn sec" data-a="reset">Restart the prototype</button></div>';}
+  else{ap='<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tealdk)">'+CHECK+'Final approval, underwriter only</div><h2 style="font-size:19px">'+(b?'Not ready for approval':'Ready for your approval')+'</h2><div class="sub" style="line-height:1.5;max-width:780px">Binding makes the policy active and creates a coverage obligation for the firm, which is hard to reverse. That is why it needs an underwriter, and why the button stays locked until every required line, document and mismatch is complete.</div></div>'+
+    (b?'<div class="banner bad" style="max-width:780px"><div style="font-size:15px;font-weight:600">Binding is locked</div><ul><li>Prior policy declarations are still missing.</li><li>The per occurrence limit mismatch is waiting for a corrected certificate.</li><li>One checklist line is not yet confirmed.</li></ul></div>':
+    '<button class="mat" style="background:transparent;border:0;padding:0;color:var(--ink);font-size:15px;max-width:780px" aria-pressed="'+S.confirmed+'" data-a="confirm" data-fk="confirm"><span class="box'+(S.confirmed?' on':'')+'" style="flex:none;margin-top:1px">'+(S.confirmed?TICKW:'')+'</span><span>I have reviewed the coverage terms and the resolved mismatch, and I approve binding this policy.</span></button>')+
+    '<div class="btns" style="align-items:center"><button class="btn'+(can?'':' off')+'" aria-disabled="'+(!can)+'" data-a="bind" data-fk="bind">Bind policy</button><span style="font-size:13.5px;color:var(--muted)">'+(b?'Locked until every item above is complete.':(S.confirmed?'Ready to bind.':'Tick the confirmation to unlock.'))+'</span></div>';}
+  return top('Signed in as an underwriter','s1','Back to Harlow Fabrication LLC')+'<div class="wrap"><div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px"><div style="display:flex;flex-direction:column;gap:6px"><div class="crumb">Harlow Fabrication LLC / Bind review</div><h1>Bind review</h1><div class="sub">Everything the assistant confirmed, in one place, so the final decision takes minutes. Sample data for this prototype.</div></div>'+
+   '<div style="display:flex;flex-direction:column;gap:4px"><span class="src">Prototype state</span><div class="seg" role="group" aria-label="Prototype state"><button class="'+(b?'':'sel')+'" aria-pressed="'+(!b)+'" data-a="state" data-v="ready" data-fk="sr">Ready</button><button class="'+(b?'sel':'')+'" aria-pressed="'+b+'" data-a="state" data-v="blocked" data-fk="sb">Blocked</button></div></div></div>'+
+   '<div class="grid">'+cards+'</div><section class="card" style="gap:16px">'+ap+'</section></div>';
+}
+
+function render(){
+  var fk=document.activeElement&&document.activeElement.getAttribute&&document.activeElement.getAttribute('data-fk');
+  var html=S.screen==='journey'?journey():S.screen==='s1'?s1():S.screen==='s2'?s2():s3();
+  document.getElementById('app').innerHTML=html;
+  if(fk){var el=document.querySelector('[data-fk="'+fk+'"]');if(el)el.focus();}
+}
+function nav(to){
+  if(to==='s3b'){S.screen='s3';S.blocked=true;S.confirmed=false;}
+  else if(to==='s3r'){S.screen='s3';S.blocked=false;S.confirmed=false;}
+  else S.screen=to;
+  window.scrollTo(0,0);
+}
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-a]'); if(!t)return;
+  var a=t.getAttribute('data-a');
+  if(a==='go')nav(t.getAttribute('data-to'));
+  else if(a==='fax')S.fax=true;
+  else if(a==='tick')S.ticks[t.getAttribute('data-id')]=!S.ticks[t.getAttribute('data-id')];
+  else if(a==='choice'){S.choice=t.getAttribute('data-v');S.sent=false;}
+  else if(a==='mat')S.material=!S.material;
+  else if(a==='send')S.sent=true;
+  else if(a==='confirm')S.confirmed=!S.confirmed;
+  else if(a==='bind'){if(!S.blocked&&S.confirmed)S.bound=true;}
+  else if(a==='state'){S.blocked=t.getAttribute('data-v')==='blocked';S.confirmed=false;S.bound=false;}
+  else if(a==='reset'){S.screen='journey';S.fax=false;S.ticks={c1:true,c2:true,c5:false,c6:false,c7:false};S.choice=null;S.material=true;S.sent=false;S.confirmed=false;S.bound=false;S.blocked=true;S.minor='';S.note='';S.misread='';window.scrollTo(0,0);}
+  render();
+});
+document.addEventListener('input',function(e){var k=e.target.getAttribute&&e.target.getAttribute('data-k');if(k)S[k]=e.target.value;});
+render();
+})();
+</script>
+</body>
+</html>
